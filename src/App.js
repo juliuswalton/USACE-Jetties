@@ -23,11 +23,12 @@ function App() {
        * Initialize application
        */
 
+      // Template for the Division's popup
       const template = {
         title: "USACE Civil Works Division",
-        content: "{DIVISION} {DIV_SYM}",
+        content: "{DIV_SYM} : {DIVISION}",
       };
-
+      // Layer that pulls in the geoJSON data for the USACE Divisions
       const geoLayer = new GeoJSONLayer({
         url: "https://opendata.arcgis.com/datasets/4cdab8820d7a4f58aaa003be63f059ac_0.geojson",
         copyright: "USACE Civil Works",
@@ -36,14 +37,17 @@ function App() {
         listMode: false
       });
 
+      // Creates the map component
       const map = new ArcGISMap({
-        basemap: "topo-vector",
-        layers: [geoLayer]
+        basemap: "topo-vector",  // initial map styling
+        layers: [geoLayer]       // array of layers that sits on top of the basemap
       });
 
+      // Creates the MapView - Necessary for rendering the Map Object above
       const view = new MapView({
         map: map,
         container: mapDiv.current,
+        // sets the initial positioning and zoom of the map
         extent: {
           spatialReference: {
             wkid: 102100,
@@ -56,19 +60,21 @@ function App() {
         zoom: 4
       });
 
+      //Creates the LayerList which is used to toggle visiblity of available map layers
       view.when(function () {
         var layerList = new LayerList({
           view: view,
-
         });
-
+        // adds the Layer toggle to the top-right of the screen
         view.ui.add(layerList, "top-right");
       });
+
+      //BasemapToggle object is used to toggle the "style" of the basemap 
       var toggle = new BasemapToggle({
-        // 2 - Set properties
         view: view, // view that provides access to the map's 'topo-vector' basemap
         nextBasemap: "hybrid" // allows for toggling to the 'hybrid' basemap
       });
+      // adds the toggle base map button display
       view.ui.add(toggle, "top-right");
     }
   }, []);
