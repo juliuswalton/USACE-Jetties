@@ -7,9 +7,13 @@ import GeoJSONLayer from "@arcgis/core/layers/GeoJSONLayer";
 import LayerList from "@arcgis/core/widgets/LayerList";
 import BasemapToggle from "@arcgis/core/widgets/BasemapToggle";
 import esriConfig from '@arcgis/core/config.js';
+import axios from 'axios';
+import Graphic from "@arcgis/core/Graphic";
+import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 
 import "./App.css";
-
+//axios.defaults.baseURL = "http://localhost:8080"; //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+axios.defaults.baseURL = "https://strange-tome-305601.ue.r.appspot.com/"; //<== USE THIS LINE FOR PRODUCTION
 function App() {
 
   // Required: Set this property to insure assets resolve correctly.
@@ -34,15 +38,103 @@ function App() {
         copyright: "USACE Civil Works",
         popupTemplate: template,
         title: "USACE Divisions",
-        listMode: false
+        listMode: false,
+        visible: false
       });
 
+      
       // Creates the map component
       const map = new ArcGISMap({
         basemap: "topo-vector",  // initial map styling
         layers: [geoLayer]       // array of layers that sits on top of the basemap
       });
 
+      // Template for popup for structure points
+      const structureTemplate = {
+        title: "{Location}",
+        content: [{
+          type: "fields",
+          fieldInfos: [
+            {
+              fieldName: "Year",
+              label: "Year Constructed"
+            },
+            {
+              fieldName: "Type",
+              label: "Structure Type"
+            }
+          ]
+        }]
+      }
+      // Tells the structure layer how to render the points
+      const pointRenderer = {
+        type: "simple",
+        symbol: {
+          type: "simple-marker",
+          size: 10,
+          color: "blue",
+          outline: {
+            wideth: 0.5,
+            color: "white"
+          }
+        }
+      }
+
+      // Api call to get structure data
+      var structurePoints = [];
+      axios.get('/api/structure')
+      .then(function (response) {
+        var structures = response.data; //Grab response data
+        
+        //For each point in the response data create a ArcGIS Point Graphic
+        for(var i = 0; i < structures.length; i++){
+          var feature = {
+            geometry: {
+              type: "point",
+              x: structures[i].Lon,
+              y: structures[i].Lat
+            },
+            attributes: {
+              ObjectID: structures[i].ID,
+              Location: structures[i].Location,
+              Year: structures[i].Year,
+              Type: structures[i].Type
+            }
+          };
+
+          //Add Point to the array of points
+          structurePoints.push(feature);
+        }
+    
+        //Create layer to show the structures
+        const structureLayer = new FeatureLayer({
+          title: "Structures",
+          source: structurePoints, //Tell the layer where to get the data for the points
+          renderer: pointRenderer,
+          popupTemplate: structureTemplate,
+          objectIDField: "ObjectID",
+          fields: [
+            {
+              name: "ObjectID",
+              type: "oid"
+            },
+            {
+              name: "Location",
+              type: "string"
+            },
+            {
+              name: "Year",
+              type: "integer"
+            },
+            {
+              name: "Type",
+              type: "integer"
+            }
+          ]
+        });
+    
+        map.add(structureLayer); //Add the layer to the base map
+      });
       // Creates the MapView - Necessary for rendering the Map Object above
       const view = new MapView({
         map: map,

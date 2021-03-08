@@ -10,59 +10,120 @@ import (
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 
-	//_ "github.com/lib/pq"
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
+	_ "github.com/lib/pq"
 )
 
+//Setting a constant for the database information
 const (
-	instanceConnection = "strange-tome-305601:us-east1:vessel-data"
+	instanceConnection = "35.196.23.166" //"strange-tome-305601:us-east1:vessel-data"
 	databaseName       = "postgres"
 	user               = "postgres"
 	password           = "capstone"
 )
 
-func main() {
+//Creating a struct for the structure table
+type Structure struct {
+	ID       int    `json: "structure_id"`
+	Location string `json: "location"`
+	Lon      string `json: "geog"`
+	Lat      string `json: "geog"`
+	Year     int    `json: year_constructed"`
+	Type     int    `json: structure_type"`
+}
+
+//Creating a struct for the vessel table
+type Vessel struct {
+	ID          string `json: "vessel_id"`
+	Description string `json: "vessel_description"`
+}
+
+//Open database connection and return a reference to the database
+func OpenConnection() *sql.DB {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", instanceConnection, user, password, databaseName)
-	db, err := sql.Open("cloudsqlpostgres", dsn)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
 
 	err = db.Ping()
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Successfully connected!")
+	return db
+}
+
+func getVessels(c *gin.Context) {
+	//Open DB connection
+	db := OpenConnection()
+
+	//Grab everything from vessels table
+	rows, err := db.Query("SELECT * vessels")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//Create instance of Vessel struct
+	var vessels []Vessel
+
+	//For the results of the query add information to the instance of Vessel created above
+	for rows.Next() {
+		var vessel Vessel
+		rows.Scan(&vessel.ID, &vessel.Description)
+		vessels = append(vessels, vessel)
+	}
+
+	//Set response type to JSON
+	c.Header("Content-Type", "application/json")
+
+	//Next Two Lines are needed for cors and cross origin requests
+
+	//c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+	c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
+	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
+
+	//Return data from query
+	c.JSON(http.StatusOK, &vessels)
+}
+
+func getStructures(c *gin.Context) {
+	//Open DB connection
+	db := OpenConnection()
+
+	rows, err := db.Query("SELECT  structure_id, location, ST_X(geog::geometry), ST_Y(geog::geometry), year_constructed, structure_type FROM structures")
+	if err != nil {
+		panic(err)
+	}
+
+	//Create instance of Structure struct
+	var structures []Structure
+
+	//For the results of the query add information to the instance of Structure created above
+	for rows.Next() {
+		var structure Structure
+		rows.Scan(&structure.ID, &structure.Location, &structure.Lon, &structure.Lat, &structure.Year, &structure.Type)
+		structures = append(structures, structure)
+	}
+
+	//Set reponse type to JSON
+	c.Header("Content-Type", "application/json")
+
+	//Next Two Lines are needed for cors and cross origin requests
+	//c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+	c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
+	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
+
+	//Return data from query
+	c.JSON(http.StatusOK, &structures)
+}
+
+func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 		log.Printf("Defaulting to port %s", port)
-	}
-
-	rows, err := db.Query("SELECT * FROM vessels")
-	if err != nil {
-		panic(err)
-	}
-	defer rows.Close()
-
-	var (
-		vessel_id          string
-		vessel_description string
-	)
-
-	for rows.Next() {
-		err := rows.Scan(&vessel_id, &vessel_description)
-		if err != nil {
-			panic(err)
-		}
-		log.Printf("%s: %s", vessel_id, vessel_description)
-	}
-	err = rows.Err()
-	if err != nil {
-		panic(err)
 	}
 	// Set the router as the default one shipped with Gin
 	router := gin.Default()
@@ -78,10 +139,14 @@ func main() {
 				"message": "pong",
 			})
 		})
+
+		//Setting Api routes
+		api.GET("/vessel", getVessels)
+		api.GET("/structure", getStructures)
+
 	}
 
 	// Start and run the server
-
 	log.Printf("Listening on port %s", port)
 	router.Run(":" + port)
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
