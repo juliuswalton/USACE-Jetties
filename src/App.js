@@ -10,10 +10,11 @@ import esriConfig from '@arcgis/core/config.js';
 import axios from 'axios';
 import Graphic from "@arcgis/core/Graphic";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
+import Legend from "@arcgis/core/widgets/Legend"
 
 import "./App.css";
-axios.defaults.baseURL = "http://localhost:8080"; //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
-//axios.defaults.baseURL = "https://strange-tome-305601.ue.r.appspot.com/"; //<== USE THIS LINE FOR PRODUCTION
+//axios.defaults.baseURL = "http://localhost:8080"; //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+axios.defaults.baseURL = "https://strange-tome-305601.ue.r.appspot.com/"; //<== USE THIS LINE FOR PRODUCTION
 function App() {
 
   // Required: Set this property to insure assets resolve correctly.
@@ -28,25 +29,40 @@ function App() {
        */
 
       // Template for the Division's popup
-      const template = {
+      const divisionTemplate = {
         title: "USACE Civil Works Division",
         content: "{DIV_SYM} : {DIVISION}",
       };
       // Layer that pulls in the geoJSON data for the USACE Divisions
-      const geoLayer = new GeoJSONLayer({
+      const divisionLayer = new GeoJSONLayer({
         url: "https://opendata.arcgis.com/datasets/4cdab8820d7a4f58aaa003be63f059ac_0.geojson",
         copyright: "USACE Civil Works",
-        popupTemplate: template,
+        popupTemplate: divisionTemplate,
         title: "USACE Divisions",
         listMode: false,
-        visible: false
+        visible: false,
+        legendEnabled: false
+      });
+
+      const districtTemplate = {
+        title: "USACE Civil Works District",
+        content: "{DIV_SYM} : {District}",
+      };
+      const districLayer = new GeoJSONLayer({
+        url: "https://opendata.arcgis.com/datasets/f3e0ba4566094e74910c391eb4ecc99f_0.geojson",
+        copyright: "USACE Civil Works",
+        popupTemplate: districtTemplate,
+        title: "USACE Districts",
+        listMode: false,
+        visible: false,
+        legendEnabled: false
       });
 
       
       // Creates the map component
       const map = new ArcGISMap({
         basemap: "topo-vector",  // initial map styling
-        layers: [geoLayer]       // array of layers that sits on top of the basemap
+        layers: [divisionLayer, districLayer]       // array of layers that sits on top of the basemap
       });
 
       // Template for popup for structure points
@@ -62,23 +78,53 @@ function App() {
             {
               fieldName: "Type",
               label: "Structure Type"
+            },
+            {
+              fieldName: "Length",
+              label: "Structure Length"
             }
           ]
         }]
       }
+
       // Tells the structure layer how to render the points
+     
+      const youngStructure = new Date().getFullYear();
+      const middleStructure = youngStructure - 50;
+      const oldStructure = middleStructure - 50
       const pointRenderer = {
         type: "simple",
         symbol: {
-          type: "simple-marker",
-          size: 10,
-          color: "blue",
-          outline: {
-            wideth: 0.5,
-            color: "white"
+            type: "simple-marker",
+            color: "white",
+            outline: {
+              width: 0.5,
+              color: "white"
+            },
+            size: 10,
+        },
+       visualVariables: [
+          {
+            type: "color",
+            field: "Year",
+            stops: [
+              {value: oldStructure, color: "red"},
+              {value: middleStructure, color: "yellow"},
+              {value: youngStructure, color: "green"},
+            ]
+          },
+          {
+            type: "size",
+            field: "Length",
+            stops: [
+              {value: 0, size: 10},
+              {value: 5000, size: 15},
+              {value: 10000, size: 20},
+            ]
           }
-        }
+        ]
       }
+
 
       // Api call to get structure data
       var structurePoints = [];
@@ -99,7 +145,8 @@ function App() {
               ObjectID: structures[i].ID,
               Name: structures[i].Name,
               Year: structures[i].Year,
-              Type: structures[i].Type
+              Type: structures[i].Type,
+              Length: structures[i].Length
             }
           };
 
@@ -130,6 +177,10 @@ function App() {
             {
               name: "Type",
               type: "string"
+            },
+            {
+              name: "Length",
+              type: "integer"
             }
           ]
         });
@@ -169,6 +220,10 @@ function App() {
       });
       // adds the toggle base map button display
       view.ui.add(toggle, "top-right");
+
+      view.ui.add(new Legend({
+        view: view
+      }), "bottom-right");
     }
   }, []);
 
