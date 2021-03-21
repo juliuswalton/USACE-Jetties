@@ -24,12 +24,12 @@ const (
 
 //Creating a struct for the structure table
 type Structure struct {
-	ID       int    `json: "structure_id"`
-	Location string `json: "location"`
-	Lon      string `json: "geog"`
-	Lat      string `json: "geog"`
-	Year     int    `json: year_constructed"`
-	Type     int    `json: structure_type"`
+	ID   int    `json: "structure_id"`
+	Name string `json: "name"`
+	Lon  string `json: "longitude"`
+	Lat  string `json: "latitude"`
+	Year int    `json: year_constructed"`
+	Type string `json: type_description"`
 }
 
 //Creating a struct for the vessel table
@@ -79,8 +79,8 @@ func getVessels(c *gin.Context) {
 
 	//Next Two Lines are needed for cors and cross origin requests
 
-	//c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
-	c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
+	c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+	//c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
 	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 
 	//Return data from query
@@ -91,7 +91,7 @@ func getStructures(c *gin.Context) {
 	//Open DB connection
 	db := OpenConnection()
 
-	rows, err := db.Query("SELECT  structure_id, location, ST_X(geog::geometry), ST_Y(geog::geometry), year_constructed, structure_type FROM structures")
+	rows, err := db.Query("SELECT s.structure_id, s.name, s.longitude, s.latitude, s.year_constructed, st.type_description FROM structures s JOIN structure_types st ON s.structure_type = st.type_id")
 	if err != nil {
 		panic(err)
 	}
@@ -102,7 +102,7 @@ func getStructures(c *gin.Context) {
 	//For the results of the query add information to the instance of Structure created above
 	for rows.Next() {
 		var structure Structure
-		rows.Scan(&structure.ID, &structure.Location, &structure.Lon, &structure.Lat, &structure.Year, &structure.Type)
+		rows.Scan(&structure.ID, &structure.Name, &structure.Lon, &structure.Lat, &structure.Year, &structure.Type)
 		structures = append(structures, structure)
 	}
 
@@ -110,8 +110,8 @@ func getStructures(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 
 	//Next Two Lines are needed for cors and cross origin requests
-	//c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
-	c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
+	c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+	//c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
 	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 
 	//Return data from query

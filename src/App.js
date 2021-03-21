@@ -12,8 +12,8 @@ import Graphic from "@arcgis/core/Graphic";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 
 import "./App.css";
-//axios.defaults.baseURL = "http://localhost:8080"; //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
-axios.defaults.baseURL = "https://strange-tome-305601.ue.r.appspot.com/"; //<== USE THIS LINE FOR PRODUCTION
+axios.defaults.baseURL = "http://localhost:8080"; //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+//axios.defaults.baseURL = "https://strange-tome-305601.ue.r.appspot.com/"; //<== USE THIS LINE FOR PRODUCTION
 function App() {
 
   // Required: Set this property to insure assets resolve correctly.
@@ -51,7 +51,7 @@ function App() {
 
       // Template for popup for structure points
       const structureTemplate = {
-        title: "{Location}",
+        title: "{Name}",
         content: [{
           type: "fields",
           fieldInfos: [
@@ -84,6 +84,7 @@ function App() {
       var structurePoints = [];
       axios.get('/api/structure')
       .then(function (response) {
+        console.log(response);
         var structures = response.data; //Grab response data
         
         //For each point in the response data create a ArcGIS Point Graphic
@@ -96,7 +97,7 @@ function App() {
             },
             attributes: {
               ObjectID: structures[i].ID,
-              Location: structures[i].Location,
+              Name: structures[i].Name,
               Year: structures[i].Year,
               Type: structures[i].Type
             }
@@ -119,7 +120,7 @@ function App() {
               type: "oid"
             },
             {
-              name: "Location",
+              name: "Name",
               type: "string"
             },
             {
@@ -128,7 +129,7 @@ function App() {
             },
             {
               name: "Type",
-              type: "integer"
+              type: "string"
             }
           ]
         });
