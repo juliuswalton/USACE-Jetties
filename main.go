@@ -24,13 +24,15 @@ const (
 
 //Creating a struct for the structure table
 type Structure struct {
-	ID     int    `json: "structure_id"`
-	Name   string `json: "name"`
-	Lon    string `json: "longitude"`
-	Lat    string `json: "latitude"`
-	Year   int    `json: year_constructed"`
-	Type   string `json: type_description"`
-	Length int    `json: structure_length`
+	ID        int    `json: "structure_id"`
+	Name      string `json: "name"`
+	Lon       string `json: "longitude"`
+	Lat       string `json: "latitude"`
+	Year      int    `json: "year_constructed"`
+	Type      string `json: "type_description"`
+	Length    int    `json: "structure_length"`
+	Community int    `json: "community"`
+	Count     int    `json: "count"`
 }
 
 //Creating a struct for the vessel table
@@ -92,7 +94,12 @@ func getStructures(c *gin.Context) {
 	//Open DB connection
 	db := OpenConnection()
 
-	rows, err := db.Query("SELECT s.structure_id, s.name, s.longitude, s.latitude, s.year_constructed, st.type_description, s.structure_length FROM structures s JOIN structure_types st ON s.structure_type = st.type_id")
+	rows, err := db.Query("SELECT s.structure_id, s.name, s.longitude, s.latitude, " +
+		"s.year_constructed, st.type_description, s.structure_length, s.community, SUM (r.counts) count " +
+		"FROM structures s " +
+		"JOIN structure_types st ON s.structure_type = st.type_id " +
+		"JOIN results r ON s.structure_id = r.s_id " +
+		"GROUP BY s.structure_id, st.type_description")
 	if err != nil {
 		panic(err)
 	}
@@ -103,7 +110,7 @@ func getStructures(c *gin.Context) {
 	//For the results of the query add information to the instance of Structure created above
 	for rows.Next() {
 		var structure Structure
-		rows.Scan(&structure.ID, &structure.Name, &structure.Lon, &structure.Lat, &structure.Year, &structure.Type, &structure.Length)
+		rows.Scan(&structure.ID, &structure.Name, &structure.Lon, &structure.Lat, &structure.Year, &structure.Type, &structure.Length, &structure.Community, &structure.Count)
 		structures = append(structures, structure)
 	}
 
@@ -111,8 +118,8 @@ func getStructures(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 
 	//Next Two Lines are needed for cors and cross origin requests
-	//c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
-	c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
+	c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+	//c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
 	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 
 	//Return data from query

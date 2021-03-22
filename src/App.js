@@ -13,8 +13,8 @@ import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import Legend from "@arcgis/core/widgets/Legend"
 
 import "./App.css";
-//axios.defaults.baseURL = "http://localhost:8080"; //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
-axios.defaults.baseURL = "https://strange-tome-305601.ue.r.appspot.com/"; //<== USE THIS LINE FOR PRODUCTION
+axios.defaults.baseURL = "http://localhost:8080"; //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+//axios.defaults.baseURL = "https://strange-tome-305601.ue.r.appspot.com/"; //<== USE THIS LINE FOR PRODUCTION
 function App() {
 
   // Required: Set this property to insure assets resolve correctly.
@@ -82,6 +82,14 @@ function App() {
             {
               fieldName: "Length",
               label: "Structure Length"
+            },
+            {
+              fieldName: "Community",
+              label: "Community Number"
+            },
+            {
+              fieldName: "Count",
+              label: "Gross Traffic Count"
             }
           ]
         }]
@@ -89,12 +97,13 @@ function App() {
 
       // Tells the structure layer how to render the points
      
-      const youngStructure = new Date().getFullYear();
-      const middleStructure = youngStructure - 50;
-      const oldStructure = middleStructure - 50
+      const youngStructure = new Date().getFullYear() - 20;
+      const middleStructure = new Date().getFullYear() - 50;
+      const oldStructure = new Date().getFullYear() - 51;
       const pointRenderer = {
-        type: "simple",
-        symbol: {
+        type: "class-breaks",
+        field: "Community",
+        defaultSymbol: {
             type: "simple-marker",
             color: "white",
             outline: {
@@ -103,6 +112,78 @@ function App() {
             },
             size: 10,
         },
+        classBreakInfos: [
+          { 
+            minValue: 0,
+            maxValue: 0,
+            symbol: {
+              type: "simple-marker",
+              color: "white",
+              style: "circle",
+              outline: {
+                width: 0.5,
+                color: "white"
+              },
+              size: 10,
+            }
+          },
+          { 
+            minValue: 1,
+            maxValue: 1,
+            symbol: {
+              type: "simple-marker",
+              color: "white",
+              style: "cross",
+              outline: {
+                width: 0.5,
+                color: "white"
+              },
+              size: 10,
+            }
+          },
+          { 
+            minValue: 2,
+            maxValue: 2,
+            symbol: {
+              type: "simple-marker",
+              color: "white",
+              style: "diamond",
+              outline: {
+                width: 0.5,
+                color: "white"
+              },
+              size: 10,
+            }
+          },
+          { 
+            minValue: 3,
+            maxValue: 3,
+            symbol: {
+              type: "simple-marker",
+              color: "white",
+              style: "square",
+              outline: {
+                width: 0.5,
+                color: "white"
+              },
+              size: 10,
+            }
+          },
+          { 
+            minValue: 4,
+            maxValue: 4,
+            symbol: {
+              type: "simple-marker",
+              color: "white",
+              style: "triangle",
+              outline: {
+                width: 0.5,
+                color: "white"
+              },
+              size: 10,
+            }
+          },
+        ],
        visualVariables: [
           {
             type: "color",
@@ -114,12 +195,11 @@ function App() {
             ]
           },
           {
-            type: "size",
-            field: "Length",
+            type: "opacity",
+            field: "Count",
             stops: [
-              {value: 0, size: 10},
-              {value: 5000, size: 15},
-              {value: 10000, size: 20},
+              {value: 0, opacity: 0.2},
+              {value: 5000, opacity: 1},
             ]
           }
         ]
@@ -130,7 +210,7 @@ function App() {
       var structurePoints = [];
       axios.get('/api/structure')
       .then(function (response) {
-        console.log(response);
+        //console.log(response);
         var structures = response.data; //Grab response data
         
         //For each point in the response data create a ArcGIS Point Graphic
@@ -146,7 +226,9 @@ function App() {
               Name: structures[i].Name,
               Year: structures[i].Year,
               Type: structures[i].Type,
-              Length: structures[i].Length
+              Length: structures[i].Length,
+              Community: structures[i].Community,
+              Count: structures[i].Count
             }
           };
 
@@ -180,6 +262,14 @@ function App() {
             },
             {
               name: "Length",
+              type: "integer"
+            },
+            {
+              name: "Community",
+              type: "integer"
+            },
+            {
+              name: "Count",
               type: "integer"
             }
           ]
@@ -223,7 +313,7 @@ function App() {
 
       view.ui.add(new Legend({
         view: view
-      }), "bottom-right");
+      }), "bottom-left");
     }
   }, []);
 
