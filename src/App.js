@@ -209,18 +209,18 @@ function App() {
 
 
       //Api call to get the time series data for total counts of transits for each day
-      //axios.get('/api/timeseries')
-      //.then(function(response){
-        //console.log(response); });
+      axios.get('/api/timeseries')
+      .then(function(response){
+        console.log(response); });
 
 
       axios.get('/api/uniquevessels')
       .then(function(response){
         console.log(response); });
 
-      //axios.get('/api/vesseltripcounts')
-      //.then(function(response){
-        //console.log(response); });
+      axios.get('/api/vesseltripcounts')
+      .then(function(response){
+        console.log(response); });
 
 
       // Api call to get structure data

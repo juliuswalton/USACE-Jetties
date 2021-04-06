@@ -51,7 +51,7 @@ type VesselTripSeries struct {
 //Creating a struct for vessel distribution queries
 
 type VesselTypeDistribution struct {
-	Count 						int `json: "count"`
+	Count 						float64 `json: "total"`
 	Vessel						string `json: "vessel_description"`
 }
 
@@ -146,7 +146,7 @@ func getTimeSeries(c *gin.Context){ //times series of vessel trip counts
 	//Open DB connection
 	db := OpenConnection()
 
-	rows, err := db.Query("SELECT day, sum(counts) FROM results GROUP BY day")
+	rows, err := db.Query("SELECT day, sum(counts) FROM results GROUP BY(day, s_id) HAVING s_id = 1") // S_ID NEEDS TO BE SET BASED ON WHAT STRUCTURE IS CHOSEN
 	if err != nil {
 		panic(err)
 	}
@@ -244,21 +244,20 @@ func getUnqVessels(c *gin.Context){ //distribution of vessel type by unique vess
 "SELECT shiptype22, sum(shiptype22_unqnum) FROM structure " +
 "GROUP BY (shiptype22) ), " +
      "t2 AS ( " +
-"SELECT vessel_type, sum(t_sum) AS count FROM t GROUP BY(vessel_type)), " +
+"SELECT vessel_type, sum(t_sum) AS total FROM t GROUP BY(vessel_type)), " +
      "vessel_sum AS ( " +
-"SELECT vessel_type, count FROM t2 WHERE vessel_type is not null AND count is not null) " +
-"SELECT count FROM vessel_sum, vessels WHERE vessel_sum.vessel_type = vessels.vessel_id")
+"SELECT vessel_type, total FROM t2 WHERE vessel_type is not null AND total is not null) " +
+"SELECT total, vessel_description FROM vessel_sum, vessels WHERE vessel_sum.vessel_type = vessels.vessel_id")
 
 	if err != nil {
 		panic(err)
 	}
 
-
 	var uniqueVessels []VesselTypeDistribution
 
 	for rows.Next() {
 		var result VesselTypeDistribution
-		rows.Scan(&result.Count)
+		rows.Scan(&result.Count, &result.Vessel)
 		uniqueVessels = append(uniqueVessels, result)
 	}
 
@@ -353,10 +352,10 @@ func getVesselTripCount(c *gin.Context){ //gets the trip count of each vessel ty
 			 "SELECT shiptype22, sum(shiptype22_num) FROM structure " +
 			 "GROUP BY (shiptype22) ), " +
      	"t2 AS ( " +
-				"SELECT vessel_type, sum(t_sum) AS count FROM t GROUP BY(vessel_type)), " +
+				"SELECT vessel_type, sum(t_sum) AS total FROM t GROUP BY(vessel_type)), " +
      	"vessel_sum AS ( " +
-				"SELECT vessel_type, count FROM t2 WHERE vessel_type is not null AND count is not null) " +
-				"SELECT count, vessel_description FROM vessel_sum, vessels WHERE vessel_sum.vessel_type = vessels.vessel_id")
+				"SELECT vessel_type, total FROM t2 WHERE vessel_type is not null AND total is not null) " +
+				"SELECT total, vessel_description FROM vessel_sum, vessels WHERE vessel_sum.vessel_type = vessels.vessel_id")
 			if err != nil {
 				panic(err)
 			}
