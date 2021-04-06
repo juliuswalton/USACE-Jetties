@@ -206,14 +206,21 @@ function App() {
       }
 
 
-      // HI I ADDED THIS HERE, THIS RETURNS JSON STUFF WITH ALL THE VALUES BUT U ONLY NEED (sum, day), YOU CAN
-      //OPEN THE WEBSITE AND GO LOOK AT THE CONSOLE AND SEE OR THE SCREENSHOT IN DISCORD
+
 
       //Api call to get the time series data for total counts of transits for each day
-      axios.get('/api/timeseries')
+      //axios.get('/api/timeseries')
+      //.then(function(response){
+        //console.log(response); });
+
+
+      axios.get('/api/uniquevessels')
       .then(function(response){
         console.log(response); });
 
+      //axios.get('/api/vesseltripcounts')
+      //.then(function(response){
+        //console.log(response); });
 
 
       // Api call to get structure data

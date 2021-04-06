@@ -41,86 +41,21 @@ type Vessel struct {
 	Description string `json: "vessel_description"`
 }
 
-//Creating a struct for the results table ** this is not its final form, don't be afraid
+//Creating a struct for the timeseries queries
 
-type Result struct {
+type VesselTripSeries struct {
 	Sum 						int `json: "sum"`
-	ID 							int `json: "s_id"`
 	Day							string `json: "day"`
-	Distance				float64 `json: "avg_dist"`
-	Counts					int 		`json: "counts"`
-	UnqCount 				int `json: "num_unique"`
-	Shiptype1 			int `json: "shiptype1"`
-	Shiptype1Count  int `json: "shiptype1_num"`
-	Shiptype1Unq    int `json: "shiptype1_unqnum"`
-	Shiptype2 			int `json: "shiptype2"`
-	Shiptype2Count  int `json: "shiptype2_num"`
-	Shiptype2Unq    int `json: "shiptype2_unqnum"`
-	Shiptype3 			int `json: "shiptype3"`
-	Shiptype3Count  int `json: "shiptype3_num"`
-	Shiptype3Unq    int `json: "shiptype3_unqnum"`
-	Shiptype4 			int `json: "shiptype4"`
-	Shiptype4Count  int `json: "shiptype4_num"`
-	Shiptype4Unq    int `json: "shiptype4_unqnum"`
-	Shiptype5 			int `json: "shiptype5"`
-	Shiptype5Count  int `json: "shiptype5_num"`
-	Shiptype5Unq    int `json: "shiptype5_unqnum"`
-	Shiptype6 			int `json: "shiptype6"`
-	Shiptype6Count  int `json: "shiptype6_num"`
-	Shiptype6Unq    int `json: "shiptype6_unqnum"`
-	Shiptype7 			int `json: "shiptype7"`
-	Shiptype7Count  int `json: "shiptype7_num"`
-	Shiptype7Unq    int `json: "shiptype7_unqnum"`
-	Shiptype8 			int `json: "shiptype8"`
-	Shiptype8Count  int `json: "shiptype8_num"`
-	Shiptype8Unq    int `json: "shiptype8_unqnum"`
-	Shiptype9 			int `json: "shiptype9"`
-	Shiptype9Count  int `json: "shiptype9_num"`
-	Shiptype9Unq    int `json: "shiptype9_unqnum"`
-	Shiptype10 			int `json: "shiptype10"`
-	Shiptype10Count int `json: "shiptype10_num"`
-	Shiptype10Unq   int `json: "shiptype10_unqnum"`
-	Shiptype11 			int `json: "shiptype11"`
-	Shiptype11Count int `json: "shiptype11_num"`
-	Shiptype11Unq   int `json: "shiptype11_unqnum"`
-	Shiptype12 			int `json: "shiptype12"`
-	Shiptype12Count int `json: "shiptype12_num"`
-	Shiptype12Unq   int `json: "shiptype12_unqnum"`
-	Shiptype13 			int `json: "shiptype13"`
-	Shiptype13Count int `json: "shiptype13_num"`
-	Shiptype13Unq   int `json: "shiptype13_unqnum"`
-	Shiptype14 			int `json: "shiptype14"`
-	Shiptype14Count int `json: "shiptype14_num"`
-	Shiptype14Unq   int `json: "shiptype14_unqnum"`
-	Shiptype15 			int `json: "shiptype15"`
-	Shiptype15Count int `json: "shiptype15_num"`
-	Shiptype15Unq   int `json: "shiptype15_unqnum"`
-	Shiptype16 			int `json: "shiptype16"`
-	Shiptype16Count int `json: "shiptype16_num"`
-	Shiptype16Unq   int `json: "shiptype16_unqnum"`
-	Shiptype17 			int `json: "shiptype17"`
-	Shiptype17Count int `json: "shiptype17_num"`
-	Shiptype17Unq   int `json: "shiptype17_unqnum"`
-	Shiptype18 			int `json: "shiptype18"`
-	Shiptype18Count int `json: "shiptype18_num"`
-	Shiptype18Unq   int `json: "shiptype18_unqnum"`
-	Shiptype19 			int `json: "shiptype19"`
-	Shiptype19Count int `json: "shiptype19_num"`
-	Shiptype19Unq   int `json: "shiptype19_unqnum"`
-	Shiptype20 			int `json: "shiptype20"`
-	Shiptype20Count int `json: "shiptype20_num"`
-	Shiptype20Unq   int `json: "shiptype20_unqnum"`
-	Shiptype21 			int `json: "shiptype21"`
-	Shiptype21Count int `json: "shiptype21_num"`
-	Shiptype21Unq   int `json: "shiptype21_unqnum"`
-	Shiptype22 			int `json: "shiptype22"`
-	Shiptype22Count int `json: "shiptype22_num"`
-	Shiptype22Unq   int `json: "shiptype22_unqnum"`
-
-
-
-
 }
+
+//Creating a struct for vessel distribution queries
+
+type VesselTypeDistribution struct {
+	Count 						int `json: "count"`
+	Vessel						string `json: "vessel_description"`
+}
+
+
 
 //Open database connection and return a reference to the database
 func OpenConnection() *sql.DB {
@@ -216,10 +151,10 @@ func getTimeSeries(c *gin.Context){ //times series of vessel trip counts
 		panic(err)
 	}
 
-	var timeSeries []Result
+	var timeSeries []VesselTripSeries
 
 	for rows.Next() {
-		var result Result
+		var result VesselTripSeries
 		rows.Scan(&result.Day, &result.Sum)
 		timeSeries = append(timeSeries, result)
 	}
@@ -234,6 +169,215 @@ func getTimeSeries(c *gin.Context){ //times series of vessel trip counts
 
 	c.JSON(http.StatusOK, &timeSeries)
 
+}
+
+func getUnqVessels(c *gin.Context){ //distribution of vessel type by unique vessels broken out by structure
+	//Open DB connection
+	db := OpenConnection()
+
+	rows, err := db.Query("WITH structure AS ( " +
+    	"SELECT * FROM results WHERE s_id = 1), " + //THE STRUCTURE ID HAS TO BE CHANGED TO A VARIABLE PASSED IN FROM THE FRONT END BASED ON WHICH STRUCTURE IS BEING QUERIED
+     	"t AS ( " +
+"SELECT shiptype1 AS vessel_type, sum(shiptype1_unqnum) AS t_sum FROM structure " +
+"GROUP BY (shiptype1) " +
+"UNION " +
+"SELECT shiptype2, sum(shiptype2_unqnum) FROM structure " +
+"GROUP BY (shiptype2) " +
+"UNION " +
+"SELECT shiptype3, sum(shiptype3_unqnum) FROM structure " +
+"GROUP BY (shiptype3) " +
+"UNION " +
+"SELECT shiptype4, sum(shiptype4_unqnum) FROM structure " +
+"GROUP BY (shiptype4) " +
+"UNION " +
+"SELECT shiptype5, sum(shiptype5_unqnum) FROM structure " +
+"GROUP BY (shiptype5) " +
+"UNION " +
+"SELECT shiptype6, sum(shiptype6_unqnum) FROM structure " +
+"GROUP BY (shiptype6) " +
+"UNION " +
+"SELECT shiptype7, sum(shiptype7_unqnum) FROM structure " +
+"GROUP BY (shiptype7) " +
+"UNION " +
+"SELECT shiptype8, sum(shiptype8_unqnum) FROM structure " +
+"GROUP BY (shiptype8) " +
+"UNION " +
+"SELECT shiptype9, sum(shiptype9_unqnum) FROM structure " +
+"GROUP BY (shiptype9) " +
+"UNION " +
+"SELECT shiptype10, sum(shiptype10_unqnum) FROM structure " +
+"GROUP BY (shiptype10) " +
+"UNION " +
+"SELECT shiptype11, sum(shiptype11_unqnum) FROM structure " +
+"GROUP BY (shiptype11) " +
+"UNION " +
+"SELECT shiptype12, sum(shiptype12_unqnum) FROM structure " +
+"GROUP BY (shiptype12) " +
+"UNION " +
+"SELECT shiptype13, sum(shiptype13_unqnum) FROM structure " +
+"GROUP BY (shiptype13) " +
+"UNION " +
+"SELECT shiptype14, sum(shiptype14_unqnum) FROM structure " +
+"GROUP BY (shiptype14) " +
+"UNION " +
+"SELECT shiptype15, sum(shiptype15_unqnum) FROM structure " +
+"GROUP BY (shiptype15) " +
+"UNION " +
+"SELECT shiptype16, sum(shiptype16_unqnum) FROM structure " +
+"GROUP BY (shiptype16) " +
+"UNION " +
+"SELECT shiptype17, sum(shiptype17_unqnum) FROM structure " +
+"GROUP BY (shiptype17) " +
+"UNION " +
+"SELECT shiptype18, sum(shiptype18_unqnum) FROM structure " +
+"GROUP BY (shiptype18) " +
+"UNION " +
+"SELECT shiptype19, sum(shiptype19_unqnum) FROM structure " +
+"GROUP BY (shiptype19) " +
+"UNION " +
+"SELECT shiptype20, sum(shiptype20_unqnum) FROM structure " +
+"GROUP BY (shiptype20) " +
+"UNION " +
+"SELECT shiptype21, sum(shiptype21_unqnum) FROM structure " +
+"GROUP BY (shiptype21) " +
+"UNION " +
+"SELECT shiptype22, sum(shiptype22_unqnum) FROM structure " +
+"GROUP BY (shiptype22) ), " +
+     "t2 AS ( " +
+"SELECT vessel_type, sum(t_sum) AS count FROM t GROUP BY(vessel_type)), " +
+     "vessel_sum AS ( " +
+"SELECT vessel_type, count FROM t2 WHERE vessel_type is not null AND count is not null) " +
+"SELECT count FROM vessel_sum, vessels WHERE vessel_sum.vessel_type = vessels.vessel_id")
+
+	if err != nil {
+		panic(err)
+	}
+
+
+	var uniqueVessels []VesselTypeDistribution
+
+	for rows.Next() {
+		var result VesselTypeDistribution
+		rows.Scan(&result.Count)
+		uniqueVessels = append(uniqueVessels, result)
+	}
+
+	//Set reponse type to JSON
+	c.Header("Content-Type", "application/json")
+
+	//Next Two Lines are needed for cors and cross origin requests
+	c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+	//c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
+	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
+
+	c.JSON(http.StatusOK, &uniqueVessels)
+
+
+}
+
+func getVesselTripCount(c *gin.Context){ //gets the trip count of each vessel type
+
+	//Open DB connection
+	db := OpenConnection()
+
+	rows, err := db.Query("WITH structure AS ( " +
+    "SELECT shiptype1, shiptype1_num, shiptype2, shiptype2_num, shiptype3, shiptype3_num, shiptype4, shiptype4_num, shiptype5, shiptype5_num, " +
+       "shiptype6, shiptype6_num, shiptype7, shiptype7_num, shiptype8, shiptype8_num, shiptype9, shiptype9_num, shiptype10, shiptype10_num, shiptype11, " +
+			 "shiptype11_num, shiptype12, shiptype12_num, shiptype13, shiptype13_num, shiptype14, shiptype14_num, shiptype15, shiptype15_num, shiptype16, shiptype16_num, " +
+       "shiptype17, shiptype17_num, shiptype18, shiptype18_num, shiptype19, shiptype19_num, shiptype20, shiptype20_num, shiptype21, shiptype21_num, shiptype22, " +
+			 "shiptype22_num  FROM results ), " +
+     "t AS ( " +
+			 "SELECT shiptype1 AS vessel_type, sum(shiptype1_num) AS t_sum FROM structure " +
+			 "GROUP BY (shiptype1) " +
+			 "UNION " +
+			 "SELECT shiptype2, sum(shiptype2_num) FROM structure " +
+			 "GROUP BY (shiptype2) " +
+			 "UNION " +
+			 "SELECT shiptype3, sum(shiptype3_num) FROM structure " +
+			 "GROUP BY (shiptype3) " +
+			 "UNION " +
+			 "SELECT shiptype4, sum(shiptype4_num) FROM structure " +
+			 "GROUP BY (shiptype4)" +
+			 "UNION " +
+			 "SELECT shiptype5, sum(shiptype5_num) FROM structure " +
+			 "GROUP BY (shiptype5) " +
+			 "UNION " +
+			 "SELECT shiptype6, sum(shiptype6_num) FROM structure " +
+			 "GROUP BY (shiptype6) " +
+			 "UNION " +
+			 "SELECT shiptype7, sum(shiptype7_num) FROM structure " +
+			 "GROUP BY (shiptype7) " +
+			 "UNION " +
+			 "SELECT shiptype8, sum(shiptype8_num) FROM structure " +
+			 "GROUP BY (shiptype8) " +
+			 "UNION " +
+			 "SELECT shiptype9, sum(shiptype9_num) FROM structure " +
+			 "GROUP BY (shiptype9) " +
+			 "UNION " +
+			 "SELECT shiptype10, sum(shiptype10_num) FROM structure " +
+			 "GROUP BY (shiptype10) " +
+			 "UNION " +
+			 "SELECT shiptype11, sum(shiptype11_num) FROM structure " +
+			 "GROUP BY (shiptype11) " +
+			 "UNION " +
+			 "SELECT shiptype12, sum(shiptype12_num) FROM structure " +
+			 "GROUP BY (shiptype12) " +
+			 "UNION " +
+			 "SELECT shiptype13, sum(shiptype13_num) FROM structure " +
+			 "GROUP BY (shiptype13) " +
+			 "UNION " +
+			 "SELECT shiptype14, sum(shiptype14_num) FROM structure " +
+			 "GROUP BY (shiptype14) " +
+			 "UNION " +
+			 "SELECT shiptype15, sum(shiptype15_num) FROM structure " +
+			 "GROUP BY (shiptype15) " +
+			 "UNION " +
+			 "SELECT shiptype16, sum(shiptype16_num) FROM structure " +
+			 "GROUP BY (shiptype16) " +
+			 "UNION " +
+			 "SELECT shiptype17, sum(shiptype17_num) FROM structure " +
+			 "GROUP BY (shiptype17) " +
+			 "UNION " +
+			 "SELECT shiptype18, sum(shiptype18_num) FROM structure " +
+			 "GROUP BY (shiptype18) " +
+			 "UNION " +
+			 "SELECT shiptype19, sum(shiptype19_num) FROM structure " +
+			 "GROUP BY (shiptype19) " +
+			 "UNION " +
+			 "SELECT shiptype20, sum(shiptype20_num) FROM structure " +
+			 "GROUP BY (shiptype20) " +
+			 "UNION " +
+			 "SELECT shiptype21, sum(shiptype21_num) FROM structure " +
+			 "GROUP BY (shiptype21) " +
+			 "UNION " +
+			 "SELECT shiptype22, sum(shiptype22_num) FROM structure " +
+			 "GROUP BY (shiptype22) ), " +
+     	"t2 AS ( " +
+				"SELECT vessel_type, sum(t_sum) AS count FROM t GROUP BY(vessel_type)), " +
+     	"vessel_sum AS ( " +
+				"SELECT vessel_type, count FROM t2 WHERE vessel_type is not null AND count is not null) " +
+				"SELECT count, vessel_description FROM vessel_sum, vessels WHERE vessel_sum.vessel_type = vessels.vessel_id")
+			if err != nil {
+				panic(err)
+			}
+
+			var vesselCounts []VesselTypeDistribution
+
+			for rows.Next() {
+				var result VesselTypeDistribution
+				rows.Scan(&result.Count, &result.Vessel)
+				vesselCounts = append(vesselCounts, result)
+			}
+
+			//Set reponse type to JSON
+			c.Header("Content-Type", "application/json")
+
+			//Next Two Lines are needed for cors and cross origin requests
+			c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+			//c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
+			c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
+
+			c.JSON(http.StatusOK, &vesselCounts)
 }
 
 func main() {
@@ -262,6 +406,8 @@ func main() {
 		api.GET("/vessel", getVessels)
 		api.GET("/structure", getStructures)
 		api.GET("/timeseries", getTimeSeries)
+		api.GET("/uniquevessels", getUnqVessels)
+		api.GET("/vesseltripcounts", getVesselTripCount)
 
 	}
 
