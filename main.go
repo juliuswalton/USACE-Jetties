@@ -284,7 +284,7 @@ func getVesselTripCount(c *gin.Context){ //gets the trip count of each vessel ty
        "shiptype6, shiptype6_num, shiptype7, shiptype7_num, shiptype8, shiptype8_num, shiptype9, shiptype9_num, shiptype10, shiptype10_num, shiptype11, " +
 			 "shiptype11_num, shiptype12, shiptype12_num, shiptype13, shiptype13_num, shiptype14, shiptype14_num, shiptype15, shiptype15_num, shiptype16, shiptype16_num, " +
        "shiptype17, shiptype17_num, shiptype18, shiptype18_num, shiptype19, shiptype19_num, shiptype20, shiptype20_num, shiptype21, shiptype21_num, shiptype22, " +
-			 "shiptype22_num  FROM results ), " +
+			 "shiptype22_num, s_id  FROM results WHERE s_id = 1 ), " +  //THE S_ID HAS TO BE CHANGED TO BE RECEIVED FROM THE FRONT END 
      "t AS ( " +
 			 "SELECT shiptype1 AS vessel_type, sum(shiptype1_num) AS t_sum FROM structure " +
 			 "GROUP BY (shiptype1) " +
