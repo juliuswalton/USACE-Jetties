@@ -41,6 +41,87 @@ type Vessel struct {
 	Description string `json: "vessel_description"`
 }
 
+//Creating a struct for the results table ** this is not its final form, don't be afraid
+
+type Result struct {
+	Sum 						int `json: "sum"`
+	ID 							int `json: "s_id"`
+	Day							string `json: "day"`
+	Distance				float64 `json: "avg_dist"`
+	Counts					int 		`json: "counts"`
+	UnqCount 				int `json: "num_unique"`
+	Shiptype1 			int `json: "shiptype1"`
+	Shiptype1Count  int `json: "shiptype1_num"`
+	Shiptype1Unq    int `json: "shiptype1_unqnum"`
+	Shiptype2 			int `json: "shiptype2"`
+	Shiptype2Count  int `json: "shiptype2_num"`
+	Shiptype2Unq    int `json: "shiptype2_unqnum"`
+	Shiptype3 			int `json: "shiptype3"`
+	Shiptype3Count  int `json: "shiptype3_num"`
+	Shiptype3Unq    int `json: "shiptype3_unqnum"`
+	Shiptype4 			int `json: "shiptype4"`
+	Shiptype4Count  int `json: "shiptype4_num"`
+	Shiptype4Unq    int `json: "shiptype4_unqnum"`
+	Shiptype5 			int `json: "shiptype5"`
+	Shiptype5Count  int `json: "shiptype5_num"`
+	Shiptype5Unq    int `json: "shiptype5_unqnum"`
+	Shiptype6 			int `json: "shiptype6"`
+	Shiptype6Count  int `json: "shiptype6_num"`
+	Shiptype6Unq    int `json: "shiptype6_unqnum"`
+	Shiptype7 			int `json: "shiptype7"`
+	Shiptype7Count  int `json: "shiptype7_num"`
+	Shiptype7Unq    int `json: "shiptype7_unqnum"`
+	Shiptype8 			int `json: "shiptype8"`
+	Shiptype8Count  int `json: "shiptype8_num"`
+	Shiptype8Unq    int `json: "shiptype8_unqnum"`
+	Shiptype9 			int `json: "shiptype9"`
+	Shiptype9Count  int `json: "shiptype9_num"`
+	Shiptype9Unq    int `json: "shiptype9_unqnum"`
+	Shiptype10 			int `json: "shiptype10"`
+	Shiptype10Count int `json: "shiptype10_num"`
+	Shiptype10Unq   int `json: "shiptype10_unqnum"`
+	Shiptype11 			int `json: "shiptype11"`
+	Shiptype11Count int `json: "shiptype11_num"`
+	Shiptype11Unq   int `json: "shiptype11_unqnum"`
+	Shiptype12 			int `json: "shiptype12"`
+	Shiptype12Count int `json: "shiptype12_num"`
+	Shiptype12Unq   int `json: "shiptype12_unqnum"`
+	Shiptype13 			int `json: "shiptype13"`
+	Shiptype13Count int `json: "shiptype13_num"`
+	Shiptype13Unq   int `json: "shiptype13_unqnum"`
+	Shiptype14 			int `json: "shiptype14"`
+	Shiptype14Count int `json: "shiptype14_num"`
+	Shiptype14Unq   int `json: "shiptype14_unqnum"`
+	Shiptype15 			int `json: "shiptype15"`
+	Shiptype15Count int `json: "shiptype15_num"`
+	Shiptype15Unq   int `json: "shiptype15_unqnum"`
+	Shiptype16 			int `json: "shiptype16"`
+	Shiptype16Count int `json: "shiptype16_num"`
+	Shiptype16Unq   int `json: "shiptype16_unqnum"`
+	Shiptype17 			int `json: "shiptype17"`
+	Shiptype17Count int `json: "shiptype17_num"`
+	Shiptype17Unq   int `json: "shiptype17_unqnum"`
+	Shiptype18 			int `json: "shiptype18"`
+	Shiptype18Count int `json: "shiptype18_num"`
+	Shiptype18Unq   int `json: "shiptype18_unqnum"`
+	Shiptype19 			int `json: "shiptype19"`
+	Shiptype19Count int `json: "shiptype19_num"`
+	Shiptype19Unq   int `json: "shiptype19_unqnum"`
+	Shiptype20 			int `json: "shiptype20"`
+	Shiptype20Count int `json: "shiptype20_num"`
+	Shiptype20Unq   int `json: "shiptype20_unqnum"`
+	Shiptype21 			int `json: "shiptype21"`
+	Shiptype21Count int `json: "shiptype21_num"`
+	Shiptype21Unq   int `json: "shiptype21_unqnum"`
+	Shiptype22 			int `json: "shiptype22"`
+	Shiptype22Count int `json: "shiptype22_num"`
+	Shiptype22Unq   int `json: "shiptype22_unqnum"`
+
+
+
+
+}
+
 //Open database connection and return a reference to the database
 func OpenConnection() *sql.DB {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", instanceConnection, user, password, databaseName)
@@ -126,6 +207,35 @@ func getStructures(c *gin.Context) {
 	c.JSON(http.StatusOK, &structures)
 }
 
+func getTimeSeries(c *gin.Context){ //times series of vessel trip counts
+	//Open DB connection
+	db := OpenConnection()
+
+	rows, err := db.Query("SELECT day, sum(counts) FROM results GROUP BY day")
+	if err != nil {
+		panic(err)
+	}
+
+	var timeSeries []Result
+
+	for rows.Next() {
+		var result Result
+		rows.Scan(&result.Day, &result.Sum)
+		timeSeries = append(timeSeries, result)
+	}
+
+	//Set reponse type to JSON
+	c.Header("Content-Type", "application/json")
+
+	//Next Two Lines are needed for cors and cross origin requests
+	c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+	//c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
+	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
+
+	c.JSON(http.StatusOK, &timeSeries)
+
+}
+
 func main() {
 
 	port := os.Getenv("PORT")
@@ -151,6 +261,7 @@ func main() {
 		//Setting Api routes
 		api.GET("/vessel", getVessels)
 		api.GET("/structure", getStructures)
+		api.GET("/timeseries", getTimeSeries)
 
 	}
 

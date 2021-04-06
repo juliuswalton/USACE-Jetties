@@ -58,7 +58,7 @@ function App() {
         legendEnabled: false
       });
 
-      
+
       // Creates the map component
       const map = new ArcGISMap({
         basemap: "topo-vector",  // initial map styling
@@ -96,7 +96,7 @@ function App() {
       }
 
       // Tells the structure layer how to render the points
-     
+
       const youngStructure = new Date().getFullYear() - 20;
       const middleStructure = new Date().getFullYear() - 50;
       const oldStructure = new Date().getFullYear() - 51;
@@ -113,7 +113,7 @@ function App() {
             size: 10,
         },
         classBreakInfos: [
-          { 
+          {
             minValue: 0,
             maxValue: 0,
             symbol: {
@@ -127,7 +127,7 @@ function App() {
               size: 10,
             }
           },
-          { 
+          {
             minValue: 1,
             maxValue: 1,
             symbol: {
@@ -141,7 +141,7 @@ function App() {
               size: 10,
             }
           },
-          { 
+          {
             minValue: 2,
             maxValue: 2,
             symbol: {
@@ -155,7 +155,7 @@ function App() {
               size: 10,
             }
           },
-          { 
+          {
             minValue: 3,
             maxValue: 3,
             symbol: {
@@ -169,7 +169,7 @@ function App() {
               size: 10,
             }
           },
-          { 
+          {
             minValue: 4,
             maxValue: 4,
             symbol: {
@@ -206,13 +206,23 @@ function App() {
       }
 
 
+      // HI I ADDED THIS HERE, THIS RETURNS JSON STUFF WITH ALL THE VALUES BUT U ONLY NEED (sum, day), YOU CAN
+      //OPEN THE WEBSITE AND GO LOOK AT THE CONSOLE AND SEE OR THE SCREENSHOT IN DISCORD
+
+      //Api call to get the time series data for total counts of transits for each day
+      axios.get('/api/timeseries')
+      .then(function(response){
+        console.log(response); });
+
+
+
       // Api call to get structure data
       var structurePoints = [];
       axios.get('/api/structure')
       .then(function (response) {
         //console.log(response);
         var structures = response.data; //Grab response data
-        
+
         //For each point in the response data create a ArcGIS Point Graphic
         for(var i = 0; i < structures.length; i++){
           var feature = {
@@ -235,7 +245,7 @@ function App() {
           //Add Point to the array of points
           structurePoints.push(feature);
         }
-    
+
         //Create layer to show the structures
         const structureLayer = new FeatureLayer({
           title: "Structures",
@@ -274,7 +284,7 @@ function App() {
             }
           ]
         });
-    
+
         map.add(structureLayer); //Add the layer to the base map
       });
       // Creates the MapView - Necessary for rendering the Map Object above
@@ -303,7 +313,7 @@ function App() {
         view.ui.add(layerList, "top-right");
       });
 
-      //BasemapToggle object is used to toggle the "style" of the basemap 
+      //BasemapToggle object is used to toggle the "style" of the basemap
       var toggle = new BasemapToggle({
         view: view, // view that provides access to the map's 'topo-vector' basemap
         nextBasemap: "hybrid" // allows for toggling to the 'hybrid' basemap
