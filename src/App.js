@@ -8,9 +8,9 @@ import LayerList from "@arcgis/core/widgets/LayerList";
 import BasemapToggle from "@arcgis/core/widgets/BasemapToggle";
 import esriConfig from '@arcgis/core/config.js';
 import axios from 'axios';
-import Graphic from "@arcgis/core/Graphic";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
-import Legend from "@arcgis/core/widgets/Legend"
+import Legend from "@arcgis/core/widgets/Legend";
+import Chart from 'chart.js/auto';
 
 import "./App.css";
 axios.defaults.baseURL = "http://localhost:8080"; //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
@@ -65,10 +65,18 @@ function App() {
         layers: [divisionLayer, districLayer]       // array of layers that sits on top of the basemap
       });
 
-      const popAction = {
+      const popActionTS = {
         title: "Time Series",
-        id: "popClick"
+        id: "timeSeries"
       }
+      const popActionUV = {
+        title: "Vessel Type by Unique Vessel",
+        id: "unqVessel"
+      }
+      const popActionTN = {
+        title: "Vessel Type by trip number",
+        id: "tripNum"
+      } 
       // Template for popup for structure points
       const structureTemplate = {
         title: "{Name}",
@@ -97,7 +105,7 @@ function App() {
             }
           ]
         }],
-        actions : [popAction]
+        actions: [popActionTS,popActionUV,popActionTN]
       }
 
       // Tells the structure layer how to render the points
@@ -109,13 +117,13 @@ function App() {
         type: "class-breaks",
         field: "Community",
         defaultSymbol: {
-            type: "simple-marker",
-            color: "white",
-            outline: {
-              width: 0.5,
-              color: "white"
-            },
-            size: 10,
+          type: "simple-marker",
+          color: "white",
+          outline: {
+            width: 0.5,
+            color: "white"
+          },
+          size: 10,
         },
         classBreakInfos: [
           {
@@ -189,22 +197,22 @@ function App() {
             }
           },
         ],
-       visualVariables: [
+        visualVariables: [
           {
             type: "color",
             field: "Year",
             stops: [
-              {value: oldStructure, color: "red"},
-              {value: middleStructure, color: "yellow"},
-              {value: youngStructure, color: "green"},
+              { value: oldStructure, color: "red" },
+              { value: middleStructure, color: "yellow" },
+              { value: youngStructure, color: "green" },
             ]
           },
           {
             type: "opacity",
             field: "Count",
             stops: [
-              {value: 0, opacity: 0.2},
-              {value: 5000, opacity: 1},
+              { value: 0, opacity: 0.2 },
+              { value: 5000, opacity: 1 },
             ]
           }
         ]
@@ -214,91 +222,91 @@ function App() {
 
 
       //Api call to get the time series data for total counts of transits for each day
-     /* axios.get('/api/timeseries')
-      .then(function(response){
-        console.log(response); });
-
-
-      axios.get('/api/uniquevessels')
-      .then(function(response){
-        console.log(response); });
-
-      axios.get('/api/vesseltripcounts')
-      .then(function(response){
-        console.log(response); });
-*/
+      /* axios.get('/api/timeseries')
+       .then(function(response){
+         console.log(response); });
+ 
+ 
+       axios.get('/api/uniquevessels')
+       .then(function(response){
+         console.log(response); });
+ 
+       axios.get('/api/vesseltripcounts')
+       .then(function(response){
+         console.log(response); });
+ */
 
       // Api call to get structure data
       var structurePoints = [];
       axios.get('/api/structure')
-      .then(function (response) {
-        console.log(response);
-        var structures = response.data; //Grab response data
-  
-        //For each point in the response data create a ArcGIS Point Graphic
-        for(var i = 0; i < structures.length; i++){
-          var feature = {
-            geometry: {
-              type: "point",
-              x: structures[i].Lon,
-              y: structures[i].Lat
-            },
-            attributes: {
-              ObjectID: structures[i].ID,
-              Name: structures[i].Name,
-              Year: structures[i].Year,
-              Type: structures[i].Type,
-              Length: structures[i].Length,
-              Community: structures[i].Community,
-              Count: structures[i].Count
-            }
-          };
+        .then(function (response) {
+          console.log(response);
+          var structures = response.data; //Grab response data
 
-          //Add Point to the array of points
-          structurePoints.push(feature);
-        }
+          //For each point in the response data create a ArcGIS Point Graphic
+          for (var i = 0; i < structures.length; i++) {
+            var feature = {
+              geometry: {
+                type: "point",
+                x: structures[i].Lon,
+                y: structures[i].Lat
+              },
+              attributes: {
+                ObjectID: structures[i].ID,
+                Name: structures[i].Name,
+                Year: structures[i].Year,
+                Type: structures[i].Type,
+                Length: structures[i].Length,
+                Community: structures[i].Community,
+                Count: structures[i].Count
+              }
+            };
 
-        //Create layer to show the structures
-        const structureLayer = new FeatureLayer({
-          title: "Structures",
-          source: structurePoints, //Tell the layer where to get the data for the points
-          renderer: pointRenderer,
-          popupTemplate: structureTemplate,
-          objectIDField: "ObjectID",
-          fields: [
-            {
-              name: "ObjectID",
-              type: "oid"
-            },
-            {
-              name: "Name",
-              type: "string"
-            },
-            {
-              name: "Year",
-              type: "integer"
-            },
-            {
-              name: "Type",
-              type: "string"
-            },
-            {
-              name: "Length",
-              type: "integer"
-            },
-            {
-              name: "Community",
-              type: "integer"
-            },
-            {
-              name: "Count",
-              type: "integer"
-            }
-          ]
+            //Add Point to the array of points
+            structurePoints.push(feature);
+          }
+
+          //Create layer to show the structures
+          const structureLayer = new FeatureLayer({
+            title: "Structures",
+            source: structurePoints, //Tell the layer where to get the data for the points
+            renderer: pointRenderer,
+            popupTemplate: structureTemplate,
+            objectIDField: "ObjectID",
+            fields: [
+              {
+                name: "ObjectID",
+                type: "oid"
+              },
+              {
+                name: "Name",
+                type: "string"
+              },
+              {
+                name: "Year",
+                type: "integer"
+              },
+              {
+                name: "Type",
+                type: "string"
+              },
+              {
+                name: "Length",
+                type: "integer"
+              },
+              {
+                name: "Community",
+                type: "integer"
+              },
+              {
+                name: "Count",
+                type: "integer"
+              }
+            ]
+          });
+
+          map.add(structureLayer); //Add the layer to the base map
         });
-
-        map.add(structureLayer); //Add the layer to the base map
-      });
       // Creates the MapView - Necessary for rendering the Map Object above
       const view = new MapView({
         map: map,
@@ -316,25 +324,151 @@ function App() {
         zoom: 4
       });
 
-      function popClick(e) {
+      function timeSeries(e) {
         console.log(view.popup.selectedFeature)
         var id = view.popup.selectedFeature.attributes.ObjectID;
         axios.get(`/api/timeseries/${id}`)
-        .then(function(response){
-          console.log("TIME SERIES", response);
-        })
-        axios.get(`/api/uniquevessels/${id}`)
-        .then(function(response){
-          console.log("UNQ Vessels", response);
-        })
-        axios.get(`/api/vesseltripcounts/${id}`)
-        .then(function(response){
-          console.log("Vessel Trip Counts", response);
-        })
+          .then(function (response) {
+            console.log("TIME SERIES", response);
+            view.popup.visible = true;
+            view.popup.open({
+              title: "Time Series Graph",
+              content: setContentInfoTimeSeries(response.data)
+            });
+          });
       }
-      view.popup.on("trigger-action", function(event){
-        if(event.action.id === "popClick"){
-          popClick(event);
+      function setContentInfoTimeSeries(response) {
+        var canvas = document.createElement('canvas');
+        canvas.id = "timeSeries";
+        var sum = [];
+        var days = [];
+        for (var key in response) {
+          sum.push(response[key]['Sum']);
+          days.push(response[key]['Day']);
+        }
+        console.log(sum);
+        var data = {
+          datasets: [{
+            label: "Vessel Trip Count",
+            data: sum,
+            backgroundColor: ["#4286f4", "#41f4be", "#8b41f4", "#e241f4", "#f44185", "#f4cd41"]
+          }],
+          labels: days
+        };
+        var timeSeriesChart = new Chart(canvas, {
+          type: 'bar',
+          data: data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          },
+        });
+        return canvas;
+      }
+      function unqVessel(e) {
+        console.log(view.popup.selectedFeature)
+        var id = view.popup.selectedFeature.attributes.ObjectID;
+        axios.get(`/api/uniquevessels/${id}`)
+          .then(function (response) {
+            console.log("UNIQUE VESSEL", response);
+            view.popup.visible = true;
+            view.popup.open({
+              title: "Distribution of Vessel Type by unique vessels",
+              content: setContentInfoUnqVessel(response.data)
+            });
+          });
+      }
+      function setContentInfoUnqVessel(response) {
+        var canvas = document.createElement('canvas');
+        canvas.id = "unqVessel";
+        var count = [];
+        var vessels = [];
+        for (var key in response) {
+          count.push(response[key]['Count']);
+          vessels.push(response[key]['Vessel']);
+        }
+        var data = {
+          datasets: [{
+            label: "Vessel Type",
+            data: count,
+            backgroundColor: ["#4286f4", "#41f4be", "#8b41f4", "#e241f4", "#f44185", "#f4cd41"]
+          }],
+          labels: vessels
+        };
+        var unqVesselChart = new Chart(canvas, {
+          type: 'bar',
+          data: data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          },
+        });
+        return canvas;
+      }
+      function tripNum(e) {
+        console.log(view.popup.selectedFeature)
+        var id = view.popup.selectedFeature.attributes.ObjectID;
+        axios.get(`/api/vesseltripcounts/${id}`)
+          .then(function (response) {
+            console.log("TRIP COUNT", response);
+            view.popup.visible = true;
+            view.popup.open({
+              title: "Distribution of Vessel Type by number of trips",
+              content: setContentInfoTripCount(response.data)
+            });
+          });
+      }
+      function setContentInfoTripCount(response) {
+        var canvas = document.createElement('canvas');
+        canvas.id = "tripNum";
+        var count = [];
+        var vessels = [];
+        for (var key in response) {
+          count.push(response[key]['Count']);
+          vessels.push(response[key]['Vessel']);
+        }
+        var data = {
+          datasets: [{
+            label: "Vessel Type",
+            data: count,
+            backgroundColor: ["#4286f4", "#41f4be", "#8b41f4", "#e241f4", "#f44185", "#f4cd41"]
+          }],
+          labels: vessels
+        };
+        var tripCountChart = new Chart(canvas, {
+          type: 'bar',
+          data: data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          },
+        });
+        return canvas;
+      }
+      view.popup.on("trigger-action", function (event) {
+        if (event.action.id === "timeSeries") {
+          timeSeries(event);
+        }
+        else if (event.action.id === "unqVessel") {
+          unqVessel(event);
+        }
+        else if (event.action.id === "tripNum") {
+          tripNum(event);
         }
       });
       //Creates the LayerList which is used to toggle visiblity of available map layers
