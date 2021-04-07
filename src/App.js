@@ -232,7 +232,7 @@ function App() {
       var structurePoints = [];
       axios.get('/api/structure')
       .then(function (response) {
-        //console.log(response);
+        console.log(response);
         var structures = response.data; //Grab response data
   
         //For each point in the response data create a ArcGIS Point Graphic
