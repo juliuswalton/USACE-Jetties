@@ -65,6 +65,10 @@ function App() {
         layers: [divisionLayer, districLayer]       // array of layers that sits on top of the basemap
       });
 
+      const popAction = {
+        title: "Time Series",
+        id: "popClick"
+      }
       // Template for popup for structure points
       const structureTemplate = {
         title: "{Name}",
@@ -92,7 +96,8 @@ function App() {
               label: "Gross Traffic Count"
             }
           ]
-        }]
+        }],
+        actions : [popAction]
       }
 
       // Tells the structure layer how to render the points
@@ -209,7 +214,7 @@ function App() {
 
 
       //Api call to get the time series data for total counts of transits for each day
-      axios.get('/api/timeseries')
+     /* axios.get('/api/timeseries')
       .then(function(response){
         console.log(response); });
 
@@ -221,7 +226,7 @@ function App() {
       axios.get('/api/vesseltripcounts')
       .then(function(response){
         console.log(response); });
-
+*/
 
       // Api call to get structure data
       var structurePoints = [];
@@ -229,7 +234,7 @@ function App() {
       .then(function (response) {
         //console.log(response);
         var structures = response.data; //Grab response data
-
+  
         //For each point in the response data create a ArcGIS Point Graphic
         for(var i = 0; i < structures.length; i++){
           var feature = {
@@ -311,6 +316,27 @@ function App() {
         zoom: 4
       });
 
+      function popClick(e) {
+        console.log(view.popup.selectedFeature)
+        var id = view.popup.selectedFeature.attributes.ObjectID;
+        axios.get(`/api/timeseries/${id}`)
+        .then(function(response){
+          console.log("TIME SERIES", response);
+        })
+        axios.get(`/api/uniquevessels/${id}`)
+        .then(function(response){
+          console.log("UNQ Vessels", response);
+        })
+        axios.get(`/api/vesseltripcounts/${id}`)
+        .then(function(response){
+          console.log("Vessel Trip Counts", response);
+        })
+      }
+      view.popup.on("trigger-action", function(event){
+        if(event.action.id === "popClick"){
+          popClick(event);
+        }
+      });
       //Creates the LayerList which is used to toggle visiblity of available map layers
       view.when(function () {
         var layerList = new LayerList({

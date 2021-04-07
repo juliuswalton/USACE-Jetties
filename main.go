@@ -44,18 +44,16 @@ type Vessel struct {
 //Creating a struct for the timeseries queries
 
 type VesselTripSeries struct {
-	Sum 						int `json: "sum"`
-	Day							string `json: "day"`
+	Sum int    `json: "sum"`
+	Day string `json: "day"`
 }
 
 //Creating a struct for vessel distribution queries
 
 type VesselTypeDistribution struct {
-	Count 						float64 `json: "total"`
-	Vessel						string `json: "vessel_description"`
+	Count  float64 `json: "total"`
+	Vessel string  `json: "vessel_description"`
 }
-
-
 
 //Open database connection and return a reference to the database
 func OpenConnection() *sql.DB {
@@ -142,11 +140,11 @@ func getStructures(c *gin.Context) {
 	c.JSON(http.StatusOK, &structures)
 }
 
-func getTimeSeries(c *gin.Context){ //times series of vessel trip counts
+func getTimeSeries(c *gin.Context) { //times series of vessel trip counts
 	//Open DB connection
 	db := OpenConnection()
 
-	rows, err := db.Query("SELECT day, sum(counts) FROM results GROUP BY(day, s_id) HAVING s_id = 1") // S_ID NEEDS TO BE SET BASED ON WHAT STRUCTURE IS CHOSEN
+	rows, err := db.Query("SELECT day, sum(counts) FROM results GROUP BY(day, s_id) HAVING s_id = " + c.Param("id") + "") // S_ID NEEDS TO BE SET BASED ON WHAT STRUCTURE IS CHOSEN
 	if err != nil {
 		panic(err)
 	}
@@ -171,83 +169,83 @@ func getTimeSeries(c *gin.Context){ //times series of vessel trip counts
 
 }
 
-func getUnqVessels(c *gin.Context){ //distribution of vessel type by unique vessels broken out by structure
+func getUnqVessels(c *gin.Context) { //distribution of vessel type by unique vessels broken out by structure
 	//Open DB connection
 	db := OpenConnection()
 
 	rows, err := db.Query("WITH structure AS ( " +
-    	"SELECT * FROM results WHERE s_id = 1), " + //THE STRUCTURE ID HAS TO BE CHANGED TO A VARIABLE PASSED IN FROM THE FRONT END BASED ON WHICH STRUCTURE IS BEING QUERIED
-     	"t AS ( " +
-"SELECT shiptype1 AS vessel_type, sum(shiptype1_unqnum) AS t_sum FROM structure " +
-"GROUP BY (shiptype1) " +
-"UNION " +
-"SELECT shiptype2, sum(shiptype2_unqnum) FROM structure " +
-"GROUP BY (shiptype2) " +
-"UNION " +
-"SELECT shiptype3, sum(shiptype3_unqnum) FROM structure " +
-"GROUP BY (shiptype3) " +
-"UNION " +
-"SELECT shiptype4, sum(shiptype4_unqnum) FROM structure " +
-"GROUP BY (shiptype4) " +
-"UNION " +
-"SELECT shiptype5, sum(shiptype5_unqnum) FROM structure " +
-"GROUP BY (shiptype5) " +
-"UNION " +
-"SELECT shiptype6, sum(shiptype6_unqnum) FROM structure " +
-"GROUP BY (shiptype6) " +
-"UNION " +
-"SELECT shiptype7, sum(shiptype7_unqnum) FROM structure " +
-"GROUP BY (shiptype7) " +
-"UNION " +
-"SELECT shiptype8, sum(shiptype8_unqnum) FROM structure " +
-"GROUP BY (shiptype8) " +
-"UNION " +
-"SELECT shiptype9, sum(shiptype9_unqnum) FROM structure " +
-"GROUP BY (shiptype9) " +
-"UNION " +
-"SELECT shiptype10, sum(shiptype10_unqnum) FROM structure " +
-"GROUP BY (shiptype10) " +
-"UNION " +
-"SELECT shiptype11, sum(shiptype11_unqnum) FROM structure " +
-"GROUP BY (shiptype11) " +
-"UNION " +
-"SELECT shiptype12, sum(shiptype12_unqnum) FROM structure " +
-"GROUP BY (shiptype12) " +
-"UNION " +
-"SELECT shiptype13, sum(shiptype13_unqnum) FROM structure " +
-"GROUP BY (shiptype13) " +
-"UNION " +
-"SELECT shiptype14, sum(shiptype14_unqnum) FROM structure " +
-"GROUP BY (shiptype14) " +
-"UNION " +
-"SELECT shiptype15, sum(shiptype15_unqnum) FROM structure " +
-"GROUP BY (shiptype15) " +
-"UNION " +
-"SELECT shiptype16, sum(shiptype16_unqnum) FROM structure " +
-"GROUP BY (shiptype16) " +
-"UNION " +
-"SELECT shiptype17, sum(shiptype17_unqnum) FROM structure " +
-"GROUP BY (shiptype17) " +
-"UNION " +
-"SELECT shiptype18, sum(shiptype18_unqnum) FROM structure " +
-"GROUP BY (shiptype18) " +
-"UNION " +
-"SELECT shiptype19, sum(shiptype19_unqnum) FROM structure " +
-"GROUP BY (shiptype19) " +
-"UNION " +
-"SELECT shiptype20, sum(shiptype20_unqnum) FROM structure " +
-"GROUP BY (shiptype20) " +
-"UNION " +
-"SELECT shiptype21, sum(shiptype21_unqnum) FROM structure " +
-"GROUP BY (shiptype21) " +
-"UNION " +
-"SELECT shiptype22, sum(shiptype22_unqnum) FROM structure " +
-"GROUP BY (shiptype22) ), " +
-     "t2 AS ( " +
-"SELECT vessel_type, sum(t_sum) AS total FROM t GROUP BY(vessel_type)), " +
-     "vessel_sum AS ( " +
-"SELECT vessel_type, total FROM t2 WHERE vessel_type is not null AND total is not null) " +
-"SELECT total, vessel_description FROM vessel_sum, vessels WHERE vessel_sum.vessel_type = vessels.vessel_id")
+		"SELECT * FROM results WHERE s_id = " + c.Param("id") + "), " + //THE STRUCTURE ID HAS TO BE CHANGED TO A VARIABLE PASSED IN FROM THE FRONT END BASED ON WHICH STRUCTURE IS BEING QUERIED
+		"t AS ( " +
+		"SELECT shiptype1 AS vessel_type, sum(shiptype1_unqnum) AS t_sum FROM structure " +
+		"GROUP BY (shiptype1) " +
+		"UNION " +
+		"SELECT shiptype2, sum(shiptype2_unqnum) FROM structure " +
+		"GROUP BY (shiptype2) " +
+		"UNION " +
+		"SELECT shiptype3, sum(shiptype3_unqnum) FROM structure " +
+		"GROUP BY (shiptype3) " +
+		"UNION " +
+		"SELECT shiptype4, sum(shiptype4_unqnum) FROM structure " +
+		"GROUP BY (shiptype4) " +
+		"UNION " +
+		"SELECT shiptype5, sum(shiptype5_unqnum) FROM structure " +
+		"GROUP BY (shiptype5) " +
+		"UNION " +
+		"SELECT shiptype6, sum(shiptype6_unqnum) FROM structure " +
+		"GROUP BY (shiptype6) " +
+		"UNION " +
+		"SELECT shiptype7, sum(shiptype7_unqnum) FROM structure " +
+		"GROUP BY (shiptype7) " +
+		"UNION " +
+		"SELECT shiptype8, sum(shiptype8_unqnum) FROM structure " +
+		"GROUP BY (shiptype8) " +
+		"UNION " +
+		"SELECT shiptype9, sum(shiptype9_unqnum) FROM structure " +
+		"GROUP BY (shiptype9) " +
+		"UNION " +
+		"SELECT shiptype10, sum(shiptype10_unqnum) FROM structure " +
+		"GROUP BY (shiptype10) " +
+		"UNION " +
+		"SELECT shiptype11, sum(shiptype11_unqnum) FROM structure " +
+		"GROUP BY (shiptype11) " +
+		"UNION " +
+		"SELECT shiptype12, sum(shiptype12_unqnum) FROM structure " +
+		"GROUP BY (shiptype12) " +
+		"UNION " +
+		"SELECT shiptype13, sum(shiptype13_unqnum) FROM structure " +
+		"GROUP BY (shiptype13) " +
+		"UNION " +
+		"SELECT shiptype14, sum(shiptype14_unqnum) FROM structure " +
+		"GROUP BY (shiptype14) " +
+		"UNION " +
+		"SELECT shiptype15, sum(shiptype15_unqnum) FROM structure " +
+		"GROUP BY (shiptype15) " +
+		"UNION " +
+		"SELECT shiptype16, sum(shiptype16_unqnum) FROM structure " +
+		"GROUP BY (shiptype16) " +
+		"UNION " +
+		"SELECT shiptype17, sum(shiptype17_unqnum) FROM structure " +
+		"GROUP BY (shiptype17) " +
+		"UNION " +
+		"SELECT shiptype18, sum(shiptype18_unqnum) FROM structure " +
+		"GROUP BY (shiptype18) " +
+		"UNION " +
+		"SELECT shiptype19, sum(shiptype19_unqnum) FROM structure " +
+		"GROUP BY (shiptype19) " +
+		"UNION " +
+		"SELECT shiptype20, sum(shiptype20_unqnum) FROM structure " +
+		"GROUP BY (shiptype20) " +
+		"UNION " +
+		"SELECT shiptype21, sum(shiptype21_unqnum) FROM structure " +
+		"GROUP BY (shiptype21) " +
+		"UNION " +
+		"SELECT shiptype22, sum(shiptype22_unqnum) FROM structure " +
+		"GROUP BY (shiptype22) ), " +
+		"t2 AS ( " +
+		"SELECT vessel_type, sum(t_sum) AS total FROM t GROUP BY(vessel_type)), " +
+		"vessel_sum AS ( " +
+		"SELECT vessel_type, total FROM t2 WHERE vessel_type is not null AND total is not null) " +
+		"SELECT total, vessel_description FROM vessel_sum, vessels WHERE vessel_sum.vessel_type = vessels.vessel_id")
 
 	if err != nil {
 		panic(err)
@@ -271,112 +269,111 @@ func getUnqVessels(c *gin.Context){ //distribution of vessel type by unique vess
 
 	c.JSON(http.StatusOK, &uniqueVessels)
 
-
 }
 
-func getVesselTripCount(c *gin.Context){ //gets the trip count of each vessel type
+func getVesselTripCount(c *gin.Context) { //gets the trip count of each vessel type
 
 	//Open DB connection
 	db := OpenConnection()
 
 	rows, err := db.Query("WITH structure AS ( " +
-    "SELECT shiptype1, shiptype1_num, shiptype2, shiptype2_num, shiptype3, shiptype3_num, shiptype4, shiptype4_num, shiptype5, shiptype5_num, " +
-       "shiptype6, shiptype6_num, shiptype7, shiptype7_num, shiptype8, shiptype8_num, shiptype9, shiptype9_num, shiptype10, shiptype10_num, shiptype11, " +
-			 "shiptype11_num, shiptype12, shiptype12_num, shiptype13, shiptype13_num, shiptype14, shiptype14_num, shiptype15, shiptype15_num, shiptype16, shiptype16_num, " +
-       "shiptype17, shiptype17_num, shiptype18, shiptype18_num, shiptype19, shiptype19_num, shiptype20, shiptype20_num, shiptype21, shiptype21_num, shiptype22, " +
-			 "shiptype22_num  FROM results ), " +
-     "t AS ( " +
-			 "SELECT shiptype1 AS vessel_type, sum(shiptype1_num) AS t_sum FROM structure " +
-			 "GROUP BY (shiptype1) " +
-			 "UNION " +
-			 "SELECT shiptype2, sum(shiptype2_num) FROM structure " +
-			 "GROUP BY (shiptype2) " +
-			 "UNION " +
-			 "SELECT shiptype3, sum(shiptype3_num) FROM structure " +
-			 "GROUP BY (shiptype3) " +
-			 "UNION " +
-			 "SELECT shiptype4, sum(shiptype4_num) FROM structure " +
-			 "GROUP BY (shiptype4)" +
-			 "UNION " +
-			 "SELECT shiptype5, sum(shiptype5_num) FROM structure " +
-			 "GROUP BY (shiptype5) " +
-			 "UNION " +
-			 "SELECT shiptype6, sum(shiptype6_num) FROM structure " +
-			 "GROUP BY (shiptype6) " +
-			 "UNION " +
-			 "SELECT shiptype7, sum(shiptype7_num) FROM structure " +
-			 "GROUP BY (shiptype7) " +
-			 "UNION " +
-			 "SELECT shiptype8, sum(shiptype8_num) FROM structure " +
-			 "GROUP BY (shiptype8) " +
-			 "UNION " +
-			 "SELECT shiptype9, sum(shiptype9_num) FROM structure " +
-			 "GROUP BY (shiptype9) " +
-			 "UNION " +
-			 "SELECT shiptype10, sum(shiptype10_num) FROM structure " +
-			 "GROUP BY (shiptype10) " +
-			 "UNION " +
-			 "SELECT shiptype11, sum(shiptype11_num) FROM structure " +
-			 "GROUP BY (shiptype11) " +
-			 "UNION " +
-			 "SELECT shiptype12, sum(shiptype12_num) FROM structure " +
-			 "GROUP BY (shiptype12) " +
-			 "UNION " +
-			 "SELECT shiptype13, sum(shiptype13_num) FROM structure " +
-			 "GROUP BY (shiptype13) " +
-			 "UNION " +
-			 "SELECT shiptype14, sum(shiptype14_num) FROM structure " +
-			 "GROUP BY (shiptype14) " +
-			 "UNION " +
-			 "SELECT shiptype15, sum(shiptype15_num) FROM structure " +
-			 "GROUP BY (shiptype15) " +
-			 "UNION " +
-			 "SELECT shiptype16, sum(shiptype16_num) FROM structure " +
-			 "GROUP BY (shiptype16) " +
-			 "UNION " +
-			 "SELECT shiptype17, sum(shiptype17_num) FROM structure " +
-			 "GROUP BY (shiptype17) " +
-			 "UNION " +
-			 "SELECT shiptype18, sum(shiptype18_num) FROM structure " +
-			 "GROUP BY (shiptype18) " +
-			 "UNION " +
-			 "SELECT shiptype19, sum(shiptype19_num) FROM structure " +
-			 "GROUP BY (shiptype19) " +
-			 "UNION " +
-			 "SELECT shiptype20, sum(shiptype20_num) FROM structure " +
-			 "GROUP BY (shiptype20) " +
-			 "UNION " +
-			 "SELECT shiptype21, sum(shiptype21_num) FROM structure " +
-			 "GROUP BY (shiptype21) " +
-			 "UNION " +
-			 "SELECT shiptype22, sum(shiptype22_num) FROM structure " +
-			 "GROUP BY (shiptype22) ), " +
-     	"t2 AS ( " +
-				"SELECT vessel_type, sum(t_sum) AS total FROM t GROUP BY(vessel_type)), " +
-     	"vessel_sum AS ( " +
-				"SELECT vessel_type, total FROM t2 WHERE vessel_type is not null AND total is not null) " +
-				"SELECT total, vessel_description FROM vessel_sum, vessels WHERE vessel_sum.vessel_type = vessels.vessel_id")
-			if err != nil {
-				panic(err)
-			}
+		"SELECT shiptype1, shiptype1_num, shiptype2, shiptype2_num, shiptype3, shiptype3_num, shiptype4, shiptype4_num, shiptype5, shiptype5_num, " +
+		"shiptype6, shiptype6_num, shiptype7, shiptype7_num, shiptype8, shiptype8_num, shiptype9, shiptype9_num, shiptype10, shiptype10_num, shiptype11, " +
+		"shiptype11_num, shiptype12, shiptype12_num, shiptype13, shiptype13_num, shiptype14, shiptype14_num, shiptype15, shiptype15_num, shiptype16, shiptype16_num, " +
+		"shiptype17, shiptype17_num, shiptype18, shiptype18_num, shiptype19, shiptype19_num, shiptype20, shiptype20_num, shiptype21, shiptype21_num, shiptype22, " +
+		"shiptype22_num, s_id FROM results WHERE s_id = " + c.Param("id") + "), " +
+		"t AS ( " +
+		"SELECT shiptype1 AS vessel_type, sum(shiptype1_num) AS t_sum FROM structure " +
+		"GROUP BY (shiptype1) " +
+		"UNION " +
+		"SELECT shiptype2, sum(shiptype2_num) FROM structure " +
+		"GROUP BY (shiptype2) " +
+		"UNION " +
+		"SELECT shiptype3, sum(shiptype3_num) FROM structure " +
+		"GROUP BY (shiptype3) " +
+		"UNION " +
+		"SELECT shiptype4, sum(shiptype4_num) FROM structure " +
+		"GROUP BY (shiptype4)" +
+		"UNION " +
+		"SELECT shiptype5, sum(shiptype5_num) FROM structure " +
+		"GROUP BY (shiptype5) " +
+		"UNION " +
+		"SELECT shiptype6, sum(shiptype6_num) FROM structure " +
+		"GROUP BY (shiptype6) " +
+		"UNION " +
+		"SELECT shiptype7, sum(shiptype7_num) FROM structure " +
+		"GROUP BY (shiptype7) " +
+		"UNION " +
+		"SELECT shiptype8, sum(shiptype8_num) FROM structure " +
+		"GROUP BY (shiptype8) " +
+		"UNION " +
+		"SELECT shiptype9, sum(shiptype9_num) FROM structure " +
+		"GROUP BY (shiptype9) " +
+		"UNION " +
+		"SELECT shiptype10, sum(shiptype10_num) FROM structure " +
+		"GROUP BY (shiptype10) " +
+		"UNION " +
+		"SELECT shiptype11, sum(shiptype11_num) FROM structure " +
+		"GROUP BY (shiptype11) " +
+		"UNION " +
+		"SELECT shiptype12, sum(shiptype12_num) FROM structure " +
+		"GROUP BY (shiptype12) " +
+		"UNION " +
+		"SELECT shiptype13, sum(shiptype13_num) FROM structure " +
+		"GROUP BY (shiptype13) " +
+		"UNION " +
+		"SELECT shiptype14, sum(shiptype14_num) FROM structure " +
+		"GROUP BY (shiptype14) " +
+		"UNION " +
+		"SELECT shiptype15, sum(shiptype15_num) FROM structure " +
+		"GROUP BY (shiptype15) " +
+		"UNION " +
+		"SELECT shiptype16, sum(shiptype16_num) FROM structure " +
+		"GROUP BY (shiptype16) " +
+		"UNION " +
+		"SELECT shiptype17, sum(shiptype17_num) FROM structure " +
+		"GROUP BY (shiptype17) " +
+		"UNION " +
+		"SELECT shiptype18, sum(shiptype18_num) FROM structure " +
+		"GROUP BY (shiptype18) " +
+		"UNION " +
+		"SELECT shiptype19, sum(shiptype19_num) FROM structure " +
+		"GROUP BY (shiptype19) " +
+		"UNION " +
+		"SELECT shiptype20, sum(shiptype20_num) FROM structure " +
+		"GROUP BY (shiptype20) " +
+		"UNION " +
+		"SELECT shiptype21, sum(shiptype21_num) FROM structure " +
+		"GROUP BY (shiptype21) " +
+		"UNION " +
+		"SELECT shiptype22, sum(shiptype22_num) FROM structure " +
+		"GROUP BY (shiptype22) ), " +
+		"t2 AS ( " +
+		"SELECT vessel_type, sum(t_sum) AS total FROM t GROUP BY(vessel_type)), " +
+		"vessel_sum AS ( " +
+		"SELECT vessel_type, total FROM t2 WHERE vessel_type is not null AND total is not null) " +
+		"SELECT total, vessel_description FROM vessel_sum, vessels WHERE vessel_sum.vessel_type = vessels.vessel_id")
+	if err != nil {
+		panic(err)
+	}
 
-			var vesselCounts []VesselTypeDistribution
+	var vesselCounts []VesselTypeDistribution
 
-			for rows.Next() {
-				var result VesselTypeDistribution
-				rows.Scan(&result.Count, &result.Vessel)
-				vesselCounts = append(vesselCounts, result)
-			}
+	for rows.Next() {
+		var result VesselTypeDistribution
+		rows.Scan(&result.Count, &result.Vessel)
+		vesselCounts = append(vesselCounts, result)
+	}
 
-			//Set reponse type to JSON
-			c.Header("Content-Type", "application/json")
+	//Set reponse type to JSON
+	c.Header("Content-Type", "application/json")
 
-			//Next Two Lines are needed for cors and cross origin requests
-			c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
-			//c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
-			c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
+	//Next Two Lines are needed for cors and cross origin requests
+	c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+	//c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
+	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 
-			c.JSON(http.StatusOK, &vesselCounts)
+	c.JSON(http.StatusOK, &vesselCounts)
 }
 
 func main() {
@@ -404,9 +401,9 @@ func main() {
 		//Setting Api routes
 		api.GET("/vessel", getVessels)
 		api.GET("/structure", getStructures)
-		api.GET("/timeseries", getTimeSeries)
-		api.GET("/uniquevessels", getUnqVessels)
-		api.GET("/vesseltripcounts", getVesselTripCount)
+		api.GET("/timeseries/:id", getTimeSeries)
+		api.GET("/uniquevessels/:id", getUnqVessels)
+		api.GET("/vesseltripcounts/:id", getVesselTripCount)
 
 	}
 
