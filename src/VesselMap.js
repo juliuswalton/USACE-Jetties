@@ -61,9 +61,9 @@ function VesselMap(props){
       }
   
       // Tells the structure layer how to render the points
-      const youngStructure = new Date().getFullYear() - 20;
-      const middleStructure = new Date().getFullYear() - 50;
-      const oldStructure = new Date().getFullYear() - 51;
+      const youngStructure = new Date().getFullYear() - 2000;
+      const middleStructure = new Date().getFullYear() - 1971;
+      const oldStructure = new Date().getFullYear() - 1970;
       const pointRenderer = {
         type: "class-breaks",
         field: "Community",
@@ -151,7 +151,8 @@ function VesselMap(props){
         visualVariables: [
           {
             type: "color",
-            field: "Year",
+            valueExpressionTitle: "Age in years",
+            valueExpression: "2021-$feature.Year",
             stops: [
               { value: oldStructure, color: "red" },
               { value: middleStructure, color: "yellow" },
