@@ -32,6 +32,7 @@ type Structure struct {
 	Type      string `json: "type_description"`
 	Length    int    `json: "structure_length"`
 	Community int    `json: "community"`
+	CommunityName string `json: "description"`
 	Count     int    `json: "count"`
 }
 
@@ -109,11 +110,12 @@ func getStructures(c *gin.Context) {
 	db := OpenConnection()
 
 	rows, err := db.Query("SELECT s.structure_id, s.name, s.longitude, s.latitude, " +
-		"s.year_constructed, st.type_description, s.structure_length, s.community, SUM (r.counts) count " +
+		"s.year_constructed, st.type_description, s.structure_length, s.community, SUM (r.counts) count, c.description " +
 		"FROM structures s " +
 		"JOIN structure_types st ON s.structure_type = st.type_id " +
 		"JOIN results r ON s.structure_id = r.s_id " +
-		"GROUP BY s.structure_id, st.type_description")
+		"JOIN communities c ON s.structure_id = c.structure_id " +
+		"GROUP BY s.structure_id, st.type_description, c.description")
 	if err != nil {
 		panic(err)
 	}
@@ -124,7 +126,7 @@ func getStructures(c *gin.Context) {
 	//For the results of the query add information to the instance of Structure created above
 	for rows.Next() {
 		var structure Structure
-		rows.Scan(&structure.ID, &structure.Name, &structure.Lon, &structure.Lat, &structure.Year, &structure.Type, &structure.Length, &structure.Community, &structure.Count)
+		rows.Scan(&structure.ID, &structure.Name, &structure.Lon, &structure.Lat, &structure.Year, &structure.Type, &structure.Length, &structure.Community, &structure.CommunityName, &structure.Count)
 		structures = append(structures, structure)
 	}
 
