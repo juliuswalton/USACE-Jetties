@@ -225,7 +225,7 @@ func getUnqVessels(c *gin.Context) { //distribution of vessel type by unique ves
 		"UNION ALL " +
 		"SELECT shiptype16, sum(shiptype16_unqnum) FROM structure " +
 		"GROUP BY (shiptype16) " +
-		"UNION ALL" +
+		"UNION ALL " +
 		"SELECT shiptype17, sum(shiptype17_unqnum) FROM structure " +
 		"GROUP BY (shiptype17) " +
 		"UNION ALL " +
@@ -261,7 +261,6 @@ func getUnqVessels(c *gin.Context) { //distribution of vessel type by unique ves
 		uniqueVessels = append(uniqueVessels, result)
 	}
 
-	//Set reponse type to JSON
 	c.Header("Content-Type", "application/json")
 
 	//Next Two Lines are needed for cors and cross origin requests
@@ -269,6 +268,7 @@ func getUnqVessels(c *gin.Context) { //distribution of vessel type by unique ves
 	//c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
 	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 
+	//Set reponse type to JSON
 	c.JSON(http.StatusOK, &uniqueVessels)
 
 }
