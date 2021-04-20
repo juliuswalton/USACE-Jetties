@@ -32,8 +32,8 @@ type Structure struct {
 	Type      string `json: "type_description"`
 	Length    int    `json: "structure_length"`
 	Community int    `json: "community"`
-	CommunityName string `json: "description"`
 	Count     int    `json: "count"`
+	CommunityName string `json: "description"`
 }
 
 //Creating a struct for the vessel table
@@ -126,7 +126,7 @@ func getStructures(c *gin.Context) {
 	//For the results of the query add information to the instance of Structure created above
 	for rows.Next() {
 		var structure Structure
-		rows.Scan(&structure.ID, &structure.Name, &structure.Lon, &structure.Lat, &structure.Year, &structure.Type, &structure.Length, &structure.Community, &structure.CommunityName, &structure.Count)
+		rows.Scan(&structure.ID, &structure.Name, &structure.Lon, &structure.Lat, &structure.Year, &structure.Type, &structure.Length, &structure.Community, &structure.Count, &structure.CommunityName)
 		structures = append(structures, structure)
 	}
 
