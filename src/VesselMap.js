@@ -276,6 +276,7 @@ function VesselMap(props){
         var id = view.popup.selectedFeature.attributes.ObjectID;
         axios.get(`/api/uniquevessels/${id}`)
           .then(function (response) {
+            console.log("Unique Vessels", response);
             view.popup.visible = true;
             view.popup.open({
               title: "Distribution of Vessel Type by unique vessels",
