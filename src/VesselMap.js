@@ -54,6 +54,11 @@ function VesselMap(props){
             {
               fieldName: "Count",
               label: "Gross Traffic Count"
+            },
+            {
+              fieldName: "CommunityName",
+              label: "Community Description",
+              visible: false
             }
           ]
         }],
@@ -66,6 +71,7 @@ function VesselMap(props){
       const oldStructure = new Date().getFullYear() - 1970;
       const pointRenderer = {
         type: "class-breaks",
+        label: "Community",
         field: "Community",
         defaultSymbol: {
           type: "simple-marker",
@@ -80,6 +86,7 @@ function VesselMap(props){
           {
             minValue: 0,
             maxValue: 0,
+            label: "0 - Low Traffic Volume, Mostly Fishing Vessels",
             symbol: {
               type: "simple-marker",
               color: "white",
@@ -94,6 +101,7 @@ function VesselMap(props){
           {
             minValue: 1,
             maxValue: 1,
+            label: "1 - Moderate Traffic Volume, Mostly Tow & Work Vessels",
             symbol: {
               type: "simple-marker",
               color: "white",
@@ -108,6 +116,7 @@ function VesselMap(props){
           {
             minValue: 2,
             maxValue: 2,
+            label: "2 - Moderate Traffic Volume, Mostly Passenger Vessels",
             symbol: {
               type: "simple-marker",
               color: "white",
@@ -122,6 +131,7 @@ function VesselMap(props){
           {
             minValue: 3,
             maxValue: 3,
+            label: "3 - Moderate Traffic Volume, Cargo Dominant Traffic",
             symbol: {
               type: "simple-marker",
               color: "white",
@@ -136,6 +146,7 @@ function VesselMap(props){
           {
             minValue: 4,
             maxValue: 4,
+            label: "4 - High Traffic Volume, Tanker/Cargo Dominant Traffic/Low Fishing",
             symbol: {
               type: "simple-marker",
               color: "white",
@@ -204,6 +215,10 @@ function VesselMap(props){
           {
             name: "Count",
             type: "integer"
+          },
+          {
+            name: "CommunityName",
+            type: "string"
           }
         ]
       });

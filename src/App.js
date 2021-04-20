@@ -32,7 +32,8 @@ function App() {
               Type: structures[i].Type,
               Length: structures[i].Length,
               Community: structures[i].Community,
-              Count: structures[i].Count
+              Count: structures[i].Count,
+              CommunityName: structures[i].CommunityName
             }
           };
 
