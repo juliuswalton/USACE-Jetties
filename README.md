@@ -24,9 +24,9 @@ Clicking on a point will show a panel containing basic information about that st
 
 From this panel different graphs showing distributions about vessel traffic can be viewed.
 
-![time series](./help_photos/timeseries.png)
+![time series](./help_photos/timeSeries.png)
 
-![number of trips](./help_photos/numtrips.png)
+![number of trips](./help_photos/numTrips.png)
 
 ![unique vessels](./help_photos/uniqueVessels.png)
 
