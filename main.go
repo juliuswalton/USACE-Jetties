@@ -24,15 +24,15 @@ const (
 
 //Creating a struct for the structure table
 type Structure struct {
-	ID        int    `json: "structure_id"`
-	Name      string `json: "name"`
-	Lon       string `json: "longitude"`
-	Lat       string `json: "latitude"`
-	Year      int    `json: "year_constructed"`
-	Type      string `json: "type_description"`
-	Length    int    `json: "structure_length"`
-	Community int    `json: "community"`
-	Count     int    `json: "count"`
+	ID            int    `json: "structure_id"`
+	Name          string `json: "name"`
+	Lon           string `json: "longitude"`
+	Lat           string `json: "latitude"`
+	Year          int    `json: "year_constructed"`
+	Type          string `json: "type_description"`
+	Length        int    `json: "structure_length"`
+	Community     int    `json: "community"`
+	Count         int    `json: "count"`
 	CommunityName string `json: "description"`
 }
 
@@ -97,8 +97,8 @@ func getVessels(c *gin.Context) {
 
 	//Next Two Lines are needed for cors and cross origin requests
 
-	c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
-	//c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
+	c.Header("Access-Control-Allow-Origin", "http://localhost:3000")                         //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+	c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
 	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 
 	//Return data from query
@@ -134,8 +134,8 @@ func getStructures(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 
 	//Next Two Lines are needed for cors and cross origin requests
-	c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
-	//c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
+	c.Header("Access-Control-Allow-Origin", "http://localhost:3000")                         //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+	c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
 	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 
 	//Return data from query
@@ -163,8 +163,8 @@ func getTimeSeries(c *gin.Context) { //times series of vessel trip counts
 	c.Header("Content-Type", "application/json")
 
 	//Next Two Lines are needed for cors and cross origin requests
-	c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
-	//c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
+	c.Header("Access-Control-Allow-Origin", "http://localhost:3000")                         //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+	c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
 	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 
 	c.JSON(http.StatusOK, &timeSeries)
@@ -264,8 +264,8 @@ func getUnqVessels(c *gin.Context) { //distribution of vessel type by unique ves
 	c.Header("Content-Type", "application/json")
 
 	//Next Two Lines are needed for cors and cross origin requests
-	c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
-	//c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
+	c.Header("Access-Control-Allow-Origin", "http://localhost:3000")                         //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+	c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
 	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 
 	//Set reponse type to JSON
@@ -371,8 +371,8 @@ func getVesselTripCount(c *gin.Context) { //gets the trip count of each vessel t
 	c.Header("Content-Type", "application/json")
 
 	//Next Two Lines are needed for cors and cross origin requests
-	c.Header("Access-Control-Allow-Origin", "http://localhost:3000") //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
-	//c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
+	c.Header("Access-Control-Allow-Origin", "http://localhost:3000")                         //<== USE THIS LINE FOR DEVELOPMENT ON LOCAL MACHINE
+	c.Header("Access-Control-Allow-Origin", "https://strange-tome-305601.ue.r.appspot.com/") //<== USE THIS LINE FOR PRODUCTION
 	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 
 	c.JSON(http.StatusOK, &vesselCounts)
