@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This project was created for the USACE to help understand data about vessel traffic near costal structures across the US. This project is currently hosted on Google Cloud Services at the following link https://strange-tome-305601.ue.r.appspot.com/
+This project was created for the USACE to help understand data about vessel traffic near coastal structures across the US. This project is currently hosted on Google Cloud Services at the following link https://strange-tome-305601.ue.r.appspot.com/
 
 ---
 
